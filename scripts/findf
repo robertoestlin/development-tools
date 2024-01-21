@@ -1,0 +1,5 @@
+#!/bin/bash
+cmd="find . -iname '*$1*'"
+echo $cmd
+eval "$cmd"
+

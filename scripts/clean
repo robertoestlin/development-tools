@@ -1,0 +1,30 @@
+#!/bin/bash
+
+#sln=`find . -maxdepth 1 -name '*.sln'`
+sln=`find . -maxdepth 1 -name '*.sln' -o -name '*.csproj'`
+
+if [ "$sln" == "" ]; then
+	echo "Did not find sln/csproj file"
+else
+	echo "Found sln/csproj file: $sln"
+
+	for var in "$@"
+	do
+		if [ "$var" == "-d" ]; then
+			rm -rf .vscode/
+			echo "Deleted .vscode/"
+		fi
+	done
+
+#	find . -iname "bin" -o -iname "obj"
+	find . -iname "bin" -o -iname "obj" | xargs rm -rf
+	echo "Deleted bin/obj"
+
+	for var in "$@"
+	do
+		if [ "$var" == "-b" ]; then
+			dotnet restore
+			dotnet build
+		fi
+	done
+fi
