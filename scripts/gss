@@ -40,11 +40,29 @@ function apply_stash() {
     fi
 }
 
-# Perform git fetch
 git fetch
 
 # Check if the branch can be fast-forwarded
 commits_behind=$(git rev-list HEAD..origin/$(git symbolic-ref --short HEAD) --count)
+
+# Check for branch divergence
+if [[ $(git status | grep "diverged") ]]; then
+    echo -e "Your branch has diverged from the remote branch."
+
+    # Display the last 5 origin commits
+    echo -e "\nOrigin/$(git symbolic-ref --short HEAD):"
+    #git log --oneline -n 5 origin/$(git symbolic-ref --short HEAD)
+	git log --pretty=format:"%C(yellow)%h %Creset%s %Cgreen(%ad)%Creset" --date=local -n 5 origin/$(git symbolic-ref --short HEAD)
+
+    # Display the last 5 local commits
+    echo -e "\nLocal:"
+    #git log --oneline -n 5
+	git log --pretty=format:"%C(yellow)%h %Creset%s %Cgreen(%ad)%Creset" --date=local -n 5
+
+	git status
+	echo "Undo your last commit but keep changes: git reset HEAD^"
+    exit 0
+fi
 
 if [ $commits_behind -gt 0 ]; then
     display_commits_behind $commits_behind
