@@ -46,7 +46,7 @@ git fetch
 commits_behind=$(git rev-list HEAD..origin/$(git symbolic-ref --short HEAD) --count)
 
 # Check for branch divergence
-if [[ $(git status | grep "diverged") ]]; then
+if [[ $(git status | grep -E "Your branch and .* have diverged|Your branch is ahead") ]]; then
     echo -e "Your branch has diverged from the remote branch."
 
     # Display the last 5 origin commits
