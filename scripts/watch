@@ -1,4 +1,5 @@
 #!/bin/bash
+# This is a poor man's version of the 'watch' command for systems without native support
 ARGS="${@}"
 
 clear; 
