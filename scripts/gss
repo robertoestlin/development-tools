@@ -31,12 +31,12 @@ function fast_forward() {
     fi
 }
 
-function pop_stash() {
-    read -p "Do you want to pop the stash? (y/n): " pop_stash_choice
+function apply_stash() {
+    read -p "Do you want to apply the stash? (y/n): " apply_stash_choice
 
-    if [[ ${pop_stash_choice,,} == "y" ]]; then
-        git stash pop
-        echo "Stash popped successfully."
+    if [[ ${apply_stash_choice,,} == "y" ]]; then
+        git stash apply
+        echo "Stash applied successfully."
     fi
 }
 
@@ -58,7 +58,7 @@ if [ $commits_behind -gt 0 ]; then
 
         if [[ $can_fast_forward -gt 0 ]]; then
             fast_forward
-            pop_stash
+            apply_stash
             echo "Continue with other actions..."
             exit 0
         else
