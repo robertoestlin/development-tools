@@ -75,7 +75,7 @@ if [ $commits_behind -gt 0 ]; then
         if [[ $can_fast_forward == $(git rev-parse HEAD) && ! $(git diff $can_fast_forward) ]]; then
             fast_forward
             apply_stash
-			git diff
+            git diff
             echo "Resolve the merge conflict, commit and push. And have a nice day!"
             exit 0
         else
