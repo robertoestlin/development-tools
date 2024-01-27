@@ -1,0 +1,82 @@
+#!/bin/bash
+
+function display_commits_behind() {
+    echo "You are $1 commit$([[ $1 -gt 1 ]] && echo "s") behind the remote branch."
+
+    commit_names=$(git log --pretty=format:"%h %s" HEAD..origin/$(git symbolic-ref --short HEAD))
+    echo -e "Commits behind:\n$commit_names"
+}
+
+function stash_changes() {
+    read -p "Do you want to stash everything including untracked files? (y/n): " stash_choice
+
+    if [[ ${stash_choice,,} == "y" ]]; then
+        git stash -u
+        echo "Changes stashed successfully."
+    else
+        echo "Exiting. Please commit or stash your changes before fast-forwarding."
+        exit 0
+    fi
+}
+
+function fast_forward() {
+    read -p "Do you want to fast-forward? (y/n): " choice
+
+    if [[ ${choice,,} == "y" ]]; then
+        git pull
+        echo "Fast-forward successful."
+    else
+        echo "Exiting. No changes applied."
+        exit 0
+    fi
+}
+
+function pop_stash() {
+    read -p "Do you want to pop the stash? (y/n): " pop_stash_choice
+
+    if [[ ${pop_stash_choice,,} == "y" ]]; then
+        git stash pop
+        echo "Stash popped successfully."
+    fi
+}
+
+# Perform git fetch
+git fetch
+
+# Check if the branch can be fast-forwarded
+commits_behind=$(git rev-list HEAD..origin/$(git symbolic-ref --short HEAD) --count)
+
+if [ $commits_behind -gt 0 ]; then
+    display_commits_behind $commits_behind
+
+    # Check if there are changes in the working directory (excluding untracked files)
+    if [[ $(git status -s -uno) ]]; then
+        echo "Local changes detected."
+        stash_changes
+
+        can_fast_forward=$(git rev-list --count HEAD..origin/$(git symbolic-ref --short HEAD))
+
+        if [[ $can_fast_forward -gt 0 ]]; then
+            fast_forward
+            pop_stash
+            echo "Continue with other actions..."
+            exit 0
+        else
+            echo "Fast-forward is not possible. Exiting."
+            exit 0
+        fi
+    else
+        can_fast_forward=$(git rev-list --count HEAD..origin/$(git symbolic-ref --short HEAD))
+
+        if [[ $can_fast_forward -gt 0 ]]; then
+            fast_forward
+            echo "Continue with other actions..."
+            exit 0
+        else
+            echo "Fast-forward is not possible. Exiting."
+            exit 0
+        fi
+    fi
+else
+    echo "Your branch is up-to-date. No action needed."
+fi
