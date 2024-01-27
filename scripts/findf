@@ -1,5 +1,6 @@
 #!/bin/bash
-cmd="find . -iname '*$1*'"
-echo $cmd
-eval "$cmd"
 
+search_term="$1"
+cmd="find . -iname '*$search_term*' 2>/dev/null"
+echo "$cmd"
+eval "$cmd"
