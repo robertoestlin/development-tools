@@ -42,7 +42,6 @@ function apply_stash() {
 
 git fetch
 
-# Check if the branch can be fast-forwarded
 commits_behind=$(git rev-list HEAD..origin/$(git symbolic-ref --short HEAD) --count)
 
 # Check for branch divergence
@@ -51,16 +50,14 @@ if [[ $(git status | grep -E "Your branch and .* have diverged|Your branch is ah
 
     # Display the last 5 origin commits
     echo -e "\nOrigin/$(git symbolic-ref --short HEAD):"
-    #git log --oneline -n 5 origin/$(git symbolic-ref --short HEAD)
-	git log --pretty=format:"%C(yellow)%h %Creset%s %Cgreen(%ad)%Creset" --date=local -n 5 origin/$(git symbolic-ref --short HEAD)
+    git log --pretty=format:"%C(yellow)%h %Creset%s %Cgreen(%ad)%Creset" --date=local -n 5 origin/$(git symbolic-ref --short HEAD)
 
     # Display the last 5 local commits
     echo -e "\nLocal:"
-    #git log --oneline -n 5
-	git log --pretty=format:"%C(yellow)%h %Creset%s %Cgreen(%ad)%Creset" --date=local -n 5
+    git log --pretty=format:"%C(yellow)%h %Creset%s %Cgreen(%ad)%Creset" --date=local -n 5
 
-	git status
-	echo "Undo your last commit but keep changes: git reset HEAD^"
+    git status
+    echo "Undo your last commit but keep changes: git reset HEAD^"
     exit 0
 fi
 
@@ -68,25 +65,28 @@ if [ $commits_behind -gt 0 ]; then
     display_commits_behind $commits_behind
 
     # Check if there are changes in the working directory (excluding untracked files)
-    if [[ $(git status -s -uno) ]]; then
+    if [[ $(git diff --exit-code) ]]; then
         echo "Local changes detected."
         stash_changes
 
-        can_fast_forward=$(git rev-list --count HEAD..origin/$(git symbolic-ref --short HEAD))
+        # Check if a fast-forward merge is possible
+        can_fast_forward=$(git merge-base origin/$(git symbolic-ref --short HEAD) HEAD)
 
-        if [[ $can_fast_forward -gt 0 ]]; then
+        if [[ $can_fast_forward == $(git rev-parse HEAD) && ! $(git diff $can_fast_forward) ]]; then
             fast_forward
             apply_stash
-            echo "Continue with other actions..."
+			git diff
+            echo "Resolve the merge conflict, commit and push. And have a nice day!"
             exit 0
         else
             echo "Fast-forward is not possible. Exiting."
             exit 0
         fi
     else
-        can_fast_forward=$(git rev-list --count HEAD..origin/$(git symbolic-ref --short HEAD))
+        # Check if a fast-forward merge is possible
+        can_fast_forward=$(git merge-base origin/$(git symbolic-ref --short HEAD) HEAD)
 
-        if [[ $can_fast_forward -gt 0 ]]; then
+        if [[ $can_fast_forward == $(git rev-parse HEAD) ]]; then
             fast_forward
             echo "Continue with other actions..."
             exit 0
