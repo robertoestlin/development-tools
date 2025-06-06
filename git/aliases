@@ -1,0 +1,6 @@
+alias gl="git log --graph --pretty=format:'%C(red)%h%C(reset) %C(bold green)%d%C(reset) %C(white)%s%C(reset) %C(green)(%cd, %ar) %C(dim white)<%an>' --date=format:'%Y-%m-%d %H:%M' --all"
+alias gs="git status"
+alias gp="git pull"
+alias gb="git branch -a"
+alias gc="git checkout"
+alias gf="git fetch"
